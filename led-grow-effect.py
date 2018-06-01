@@ -8,7 +8,7 @@ from array import array
 import Adafruit_PCA9685
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 class Pca9685Hat:
   def __init__(self, num_channels=10, address=0x40):
@@ -30,10 +30,10 @@ class Pca9685Hat:
         v = 3500
       else:
         v = 4096
-    pwm = int(v)
-    if channels[channel] != pwm:
-      self.controller.set_pwm(channel, 0, pwm)
-      channels[channel] = pwm
+    pwm_value = int(v)
+    if not channel in self.channels.keys() or self.channels[channel] != pwm_value:
+      self.controller.set_pwm(channel, 0, pwm_value)
+      self.channels[channel] = pwm_value
 
   def illuminate(self):
     iteration = 0
@@ -41,16 +41,16 @@ class Pca9685Hat:
     while True:
       for step in range(0, num_steps):
         x = (math.pi / 2 ) * step / (num_steps-1)
-        for channel in range(0, num_channels):
-          hat.set_pwm(channel, x, iteration)
+        for channel in range(0, self.num_channels):
+          self.set_pwm(channel, x, iteration)
         time.sleep(0.01)
       iteration = iteration + 1
-      if iteration % num_channels == 0:
-        print("Cycle %d" % (iteration / num_channels))
+      if iteration % self.num_channels == 0:
+        print("Cycle %d" % (iteration / self.num_channels))
 
 def main():
   hat = Pca9685Hat(num_channels=12)
-  num_channels = 12
+  hat.illuminate()
 
 if __name__ == "__main__":
   main()
